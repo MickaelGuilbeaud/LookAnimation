@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/look_iv_look_picture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+    <!-- LinearLayout used to display upper body products -->
+    <LinearLayout
+        android:id="@+id/look_ll_upper_body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:orientation="vertical"
+        />
+
+    <!-- LinearLayout used to display lower body products -->
+    <LinearLayout
+        android:id="@+id/look_ll_lower_body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:orientation="vertical"
+        />
+
+</RelativeLayout>

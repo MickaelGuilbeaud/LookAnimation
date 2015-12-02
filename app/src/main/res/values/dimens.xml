@@ -2,4 +2,10 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!-- region Listitem Product -->
+    <dimen name="listitem_product_picture_size">48dp</dimen>
+    <dimen name="listitem_product_picture_margin">8dp</dimen>
+    <!-- endregion -->
+
 </resources>
