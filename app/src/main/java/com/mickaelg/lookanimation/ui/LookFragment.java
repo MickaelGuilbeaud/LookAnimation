@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,17 +43,36 @@ public class LookFragment extends Fragment {
     private static final int STATE_LOWER_BODY = 2;
 
     @Bind(R.id.look_iv_look_picture)
-    private ImageView mIvLook;
+    protected ImageView mIvLook;
     @Bind(R.id.look_ll_upper_body)
-    private LinearLayout mLlUpperBodyProducts;
+    protected LinearLayout mLlUpperBodyProducts;
     @Bind(R.id.look_ll_lower_body)
-    private LinearLayout mLlLowerBodyProducts;
+    protected LinearLayout mLlLowerBodyProducts;
+
+    /**
+     * Animations duration in ms.
+     */
+    private static final int ANIMATION_DURATION = 300;
+    /**
+     * Picture scale to apply when we zoom in.
+     */
+    private static final float PICTURE_SCALE = 1.75f;
+    /**
+     * Translation on the X axis to apply to the picture during the zoomIn.
+     */
+    private static float pictureTranslationX = 400f;
+    /**
+     * Translation on the Y axis to apply to the picture during the zoomIn.
+     */
+    private static float pictureTranslationY = 500f;
 
     /**
      * Look displayed by the view.
      */
     private LookModel mLook = LookModel.createLookModel();
-
+    /**
+     * Current state of the view.
+     */
     @LookFragment.PictureState
     private int mCurrentPictureState = STATE_NOT_ZOOMED;
 
@@ -79,6 +99,12 @@ public class LookFragment extends Fragment {
         ButterKnife.bind(this, view);
         initUI();
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        computeTransitionValues();
     }
 
     // endregion
@@ -110,6 +136,17 @@ public class LookFragment extends Fragment {
         mLlLowerBodyProducts.setVisibility(View.GONE);
     }
 
+    /**
+     * Compute the transition values that depend on the screen or view sizes.
+     */
+    private void computeTransitionValues() {
+        // Compute look picture translation values
+        // TODO
+
+        // Compute product layout heights
+        // TODO
+    }
+
     @OnClick(R.id.look_iv_look_picture)
     public void onLookPictureClicked() {
         switch (mCurrentPictureState) {
@@ -136,11 +173,23 @@ public class LookFragment extends Fragment {
     // region Animations
 
     private void zoomInPicture() {
-        // TODO
+        mIvLook.animate()
+                .setDuration(ANIMATION_DURATION)
+                .setInterpolator(new FastOutSlowInInterpolator())
+                .scaleX(PICTURE_SCALE)
+                .scaleY(PICTURE_SCALE)
+                .translationXBy(pictureTranslationX)
+                .translationYBy(pictureTranslationY);
     }
 
     private void zoomOutPicture() {
-        // TODO
+        mIvLook.animate()
+                .setDuration(ANIMATION_DURATION)
+                .setInterpolator(new FastOutSlowInInterpolator())
+                .scaleX(1f)
+                .scaleY(1f)
+                .translationXBy(-1 * pictureTranslationX)
+                .translationYBy(-1 * pictureTranslationY);
     }
 
     private void slideInUpperBodyLayout() {
