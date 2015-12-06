@@ -5,7 +5,6 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -24,7 +23,6 @@ import java.lang.annotation.RetentionPolicy;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 /**
  * Created by mickaelg on 02/12/2015.
@@ -53,36 +51,22 @@ public class LookFragment extends Fragment {
     protected LinearLayout mLlLowerBodyProducts;
 
     /**
-     * Animations duration in ms.
-     */
-    private static final int ANIMATION_DURATION = 300;
-    /**
-     * Picture scale to apply when we zoom in.
-     */
-    private static final float PICTURE_SCALE = 1.75f;
-    /**
-     * Translation on the X axis to apply to the picture during the zoomIn.
-     */
-    private static float pictureTranslationX = 400f;
-    /**
-     * Translation on the Y axis to apply to the picture during the zoomIn.
-     */
-    private static float pictureTranslationY = 500f;
-
-
-    /**
-     * Look displayed by the view.
-     */
-    private LookModel mLook = LookModel.createLookModel();
-    /**
      * Current state of the view.
      */
     @LookFragment.PictureState
     private int mCurrentPictureState = STATE_NOT_ZOOMED;
     /**
-     * Detector to detect
+     * Look displayed by the view.
+     */
+    private LookModel mLook = LookModel.createLookModel();
+    /**
+     * Detector to detect gestures.
      */
     private GestureDetectorCompat mDetector;
+    /**
+     * Delegate applying the transitions.
+     */
+    private LookAnimationDelegate mLookAnimationDelegate = new LookAnimationDelegate();
 
     // endregion
 
@@ -107,12 +91,6 @@ public class LookFragment extends Fragment {
         ButterKnife.bind(this, view);
         initUI();
         return view;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        computeTransitionValues();
     }
 
     // endregion
@@ -141,8 +119,8 @@ public class LookFragment extends Fragment {
         }
 
         // Hide the product layouts
-        mLlUpperBodyProducts.setVisibility(View.GONE);
-        mLlLowerBodyProducts.setVisibility(View.GONE);
+        mLlUpperBodyProducts.setVisibility(View.INVISIBLE);
+        mLlLowerBodyProducts.setVisibility(View.INVISIBLE);
 
         // Init the gesture detector
         mDetector = new GestureDetectorCompat(getActivity(), new LookGestureListener());
@@ -154,63 +132,6 @@ public class LookFragment extends Fragment {
                 return true;
             }
         });
-    }
-
-    /**
-     * Compute the transition values that depend on the screen or view sizes.
-     */
-    private void computeTransitionValues() {
-        // Compute look picture translation values
-        // TODO
-
-        // Compute product layout heights
-        // TODO
-    }
-
-    // endregion
-
-
-    // region UI events
-
-    // endregion
-
-
-    // region Animations
-
-    private void zoomInPicture() {
-        mIvLook.animate()
-                .setDuration(ANIMATION_DURATION)
-                .setInterpolator(new FastOutSlowInInterpolator())
-                .scaleX(PICTURE_SCALE)
-                .scaleY(PICTURE_SCALE)
-                .translationXBy(pictureTranslationX)
-                .translationYBy(pictureTranslationY);
-    }
-
-    private void zoomOutPicture() {
-        mIvLook.animate()
-                .setDuration(ANIMATION_DURATION)
-                .setInterpolator(new FastOutSlowInInterpolator())
-                .scaleX(1f)
-                .scaleY(1f)
-                .translationXBy(-1 * pictureTranslationX)
-                .translationYBy(-1 * pictureTranslationY);
-    }
-
-    private void slideInUpperBodyLayout() {
-        // TODO
-    }
-
-    private void slideOutUpperBodyLayout() {
-        // TODO
-    }
-
-    private void slideInLowerBodyLayout() {
-        // TODO
-    }
-
-    private void slideOutLowerBodyLayout() {
-        // TODO
     }
 
     // endregion
@@ -225,24 +146,26 @@ public class LookFragment extends Fragment {
             switch (mCurrentPictureState) {
                 case STATE_NOT_ZOOMED:
                     mCurrentPictureState = STATE_UPPER_BODY;
-                    zoomInPicture();
-                    slideInUpperBodyLayout();
+                    mLookAnimationDelegate.zoomInPicture(mIvLook);
+                    mLookAnimationDelegate.slideInUpperBodyLayout();
                     break;
                 case STATE_UPPER_BODY:
                     mCurrentPictureState = STATE_NOT_ZOOMED;
-                    zoomOutPicture();
-                    slideOutUpperBodyLayout();
+                    mLookAnimationDelegate.zoomOutPicture(mIvLook);
+                    mLookAnimationDelegate.slideOutUpperBodyLayout();
                     break;
                 case STATE_LOWER_BODY:
                     mCurrentPictureState = STATE_NOT_ZOOMED;
-                    zoomOutPicture();
-                    slideOutLowerBodyLayout();
+                    mLookAnimationDelegate.zoomOutPicture(mIvLook);
+                    mLookAnimationDelegate.slideOutLowerBodyLayout();
             }
             return true;
         }
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+
+
             // TODO
             return true;
         }
