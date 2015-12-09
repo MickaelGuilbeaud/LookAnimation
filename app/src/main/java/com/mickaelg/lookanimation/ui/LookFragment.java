@@ -5,6 +5,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GestureDetectorCompat;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -31,17 +32,7 @@ public class LookFragment extends Fragment {
 
     // region Properties
 
-    /**
-     * Possible states of a the main picture.
-     */
-    @IntDef({STATE_NOT_ZOOMED, STATE_UPPER_BODY, STATE_LOWER_BODY})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface PictureState {
-    }
-
-    private static final int STATE_NOT_ZOOMED = 0;
-    private static final int STATE_UPPER_BODY = 1;
-    private static final int STATE_LOWER_BODY = 2;
+    private static final String TAG = LookFragment.class.getSimpleName();
 
     @Bind(R.id.look_iv_look_picture)
     protected ImageView mIvLook;
@@ -50,11 +41,6 @@ public class LookFragment extends Fragment {
     @Bind(R.id.look_ll_lower_body)
     protected LinearLayout mLlLowerBodyProducts;
 
-    /**
-     * Current state of the view.
-     */
-    @LookFragment.PictureState
-    private int mCurrentPictureState = STATE_NOT_ZOOMED;
     /**
      * Look displayed by the view.
      */
@@ -66,7 +52,7 @@ public class LookFragment extends Fragment {
     /**
      * Delegate applying the transitions.
      */
-    private LookAnimationDelegate mLookAnimationDelegate = new LookAnimationDelegate();
+    private LookAnimationDelegate mLookAnimationDelegate;
 
     // endregion
 
@@ -99,6 +85,8 @@ public class LookFragment extends Fragment {
     // region UI
 
     private void initUI() {
+        mLookAnimationDelegate = new LookAnimationDelegate(mIvLook, mLlUpperBodyProducts, mLlLowerBodyProducts);
+
         // Set the main picture
         Glide.with(this)
                 .load(mLook.getLookPictureResId())
@@ -123,7 +111,7 @@ public class LookFragment extends Fragment {
         mLlLowerBodyProducts.setVisibility(View.INVISIBLE);
 
         // Init the gesture detector
-        mDetector = new GestureDetectorCompat(getActivity(), new LookGestureListener());
+        mDetector = new GestureDetectorCompat(getActivity(), mLookAnimationDelegate.getGestureListener());
         mIvLook.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -136,49 +124,5 @@ public class LookFragment extends Fragment {
 
     // endregion
 
-
-    // region LookGestureListener
-
-    private class LookGestureListener extends GestureDetector.SimpleOnGestureListener {
-
-        @Override
-        public boolean onSingleTapUp(MotionEvent e) {
-            switch (mCurrentPictureState) {
-                case STATE_NOT_ZOOMED:
-                    mCurrentPictureState = STATE_UPPER_BODY;
-                    mLookAnimationDelegate.zoomInPicture(mIvLook);
-                    mLookAnimationDelegate.slideInUpperBodyLayout();
-                    break;
-                case STATE_UPPER_BODY:
-                    mCurrentPictureState = STATE_NOT_ZOOMED;
-                    mLookAnimationDelegate.zoomOutPicture(mIvLook);
-                    mLookAnimationDelegate.slideOutUpperBodyLayout();
-                    break;
-                case STATE_LOWER_BODY:
-                    mCurrentPictureState = STATE_NOT_ZOOMED;
-                    mLookAnimationDelegate.zoomOutPicture(mIvLook);
-                    mLookAnimationDelegate.slideOutLowerBodyLayout();
-            }
-            return true;
-        }
-
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-
-
-            // TODO
-            return true;
-        }
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            // We override and set the return to true for this method because every gesture starts with a Down event so
-            // we want to listen to this event
-            return true;
-        }
-
-    }
-
-    // endregion
 
 }

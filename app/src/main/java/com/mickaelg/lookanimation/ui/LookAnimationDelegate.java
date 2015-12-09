@@ -1,7 +1,15 @@
 package com.mickaelg.lookanimation.ui;
 
+import android.support.annotation.IntDef;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
-import android.view.View;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Created by mickaelg on 06/12/2015.
@@ -9,6 +17,30 @@ import android.view.View;
 public class LookAnimationDelegate {
 
     // region Properties
+
+    private static final String TAG = LookAnimationDelegate.class.getSimpleName();
+
+    /**
+     * Possible states of a the main picture.
+     */
+    @IntDef({STATE_NOT_ZOOMED, STATE_UPPER_BODY, STATE_LOWER_BODY})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PictureState {
+    }
+
+    private static final int STATE_NOT_ZOOMED = 0;
+    private static final int STATE_UPPER_BODY = 1;
+    private static final int STATE_LOWER_BODY = 2;
+
+    private ImageView mIvLook;
+    private LinearLayout mLlUpperBodyProducts;
+    private LinearLayout mLlLowerBodyProducts;
+
+    /**
+     * Current state of the view.
+     */
+    @PictureState
+    private int mCurrentPictureState = STATE_NOT_ZOOMED;
 
     /**
      * Animations duration in ms.
@@ -25,19 +57,41 @@ public class LookAnimationDelegate {
     /**
      * Multiplier to apply for the translation on the Y axis during the zoomIn.
      */
-    private static float pictureZoomTranslationYMultiplier = 0.2f;
+    private static float pictureZoomTranslationYMultiplierUpperBody = 0.2f;
     /**
-     * Multiplier to apply for the translation on the X axis when changing the body part.
+     * Multiplier to apply for the translation on the Y axis during the zoomOut, if the current picture is in the lower
+     * body state. It is the sum of pictureZoomTranslationYMultiplierUpperBody and pictureTranslationYMultiplier.
      */
-    private static float pictureTranslationYMultiplier = -0.3f;
+    private static float pictureZoomTranslationYMultiplierLowerBody = -0.2f;
+    /**
+     * Multiplier to apply for the translation on the Y axis when changing the body part.
+     */
+    private static float pictureTranslationYMultiplier = -0.4f;
+    /**
+     * Percentage of the view height that need to be crossed to register a fling.
+     */
+    private static final float SLIDE_THRESHOLD_MULTIPLIER = 0.05f;
+
+    private LookGestureListener mGestureListener = new LookGestureListener();
 
     // endregion
 
 
     // region Constructors
 
-    public LookAnimationDelegate() {
-        // Nothing
+    public LookAnimationDelegate(ImageView ivLook, LinearLayout llUpperBodyProducts, LinearLayout llLowerBodyProducts) {
+        this.mIvLook = ivLook;
+        this.mLlUpperBodyProducts = llUpperBodyProducts;
+        this.mLlLowerBodyProducts = llLowerBodyProducts;
+    }
+
+    // endregion
+
+
+    // region Getters and Setters
+
+    public LookGestureListener getGestureListener() {
+        return mGestureListener;
     }
 
     // endregion
@@ -45,11 +99,11 @@ public class LookAnimationDelegate {
 
     // region Animations
 
-    public void zoomInPicture(View view) {
-        final float translationXBy = view.getMeasuredWidth() * pictureZoomTranslationXMultiplier;
-        final float translationYBy = view.getMeasuredHeight() * pictureZoomTranslationYMultiplier;
+    public void zoomInPicture() {
+        final float translationXBy = mIvLook.getMeasuredWidth() * pictureZoomTranslationXMultiplier;
+        final float translationYBy = mIvLook.getMeasuredHeight() * pictureZoomTranslationYMultiplierUpperBody;
 
-        view.animate()
+        mIvLook.animate()
                 .setDuration(ANIMATION_DURATION)
                 .setInterpolator(new FastOutSlowInInterpolator())
                 .scaleX(PICTURE_SCALE)
@@ -58,11 +112,17 @@ public class LookAnimationDelegate {
                 .translationYBy(translationYBy);
     }
 
-    public void zoomOutPicture(View view) {
-        final float translationXBy = -1 * view.getMeasuredWidth() * pictureZoomTranslationXMultiplier;
-        final float translationYBy = -1 * view.getMeasuredHeight() * pictureZoomTranslationYMultiplier;
+    public void zoomOutPicture() {
+        final float translationXBy = -1 * mIvLook.getMeasuredWidth() * pictureZoomTranslationXMultiplier;
 
-        view.animate()
+        // We need to apply a different transformation based on the current picture state
+        float yMultiplier = pictureZoomTranslationYMultiplierUpperBody;
+        if (mCurrentPictureState == STATE_LOWER_BODY) {
+            yMultiplier = pictureZoomTranslationYMultiplierLowerBody;
+        }
+        final float translationYBy = -1 * mIvLook.getMeasuredHeight() * yMultiplier;
+
+        mIvLook.animate()
                 .setDuration(ANIMATION_DURATION)
                 .setInterpolator(new FastOutSlowInInterpolator())
                 .scaleX(1f)
@@ -71,19 +131,19 @@ public class LookAnimationDelegate {
                 .translationYBy(translationYBy);
     }
 
-    public void slideDownPicture(View view) {
-        final float translationYBy = view.getMeasuredHeight() * pictureTranslationYMultiplier;
+    public void slideDownPicture() {
+        final float translationYBy = mIvLook.getMeasuredHeight() * pictureTranslationYMultiplier;
 
-        view.animate()
+        mIvLook.animate()
                 .setDuration(ANIMATION_DURATION)
                 .setInterpolator(new FastOutSlowInInterpolator())
                 .translationYBy(translationYBy);
     }
 
-    public void slideUpPicture(View view) {
-        final float translationYBy = -1 * view.getMeasuredHeight() * pictureTranslationYMultiplier;
+    public void slideUpPicture() {
+        final float translationYBy = -1 * mIvLook.getMeasuredHeight() * pictureTranslationYMultiplier;
 
-        view.animate()
+        mIvLook.animate()
                 .setDuration(ANIMATION_DURATION)
                 .setInterpolator(new FastOutSlowInInterpolator())
                 .translationYBy(translationYBy);
@@ -103,6 +163,69 @@ public class LookAnimationDelegate {
 
     public void slideOutLowerBodyLayout() {
         // TODO
+    }
+
+    // endregion
+
+
+    // region LookGestureListener
+
+    public class LookGestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            switch (mCurrentPictureState) {
+                case STATE_NOT_ZOOMED:
+                    mCurrentPictureState = STATE_UPPER_BODY;
+                    zoomInPicture();
+                    slideInUpperBodyLayout();
+                    break;
+                case STATE_UPPER_BODY:
+                    mCurrentPictureState = STATE_NOT_ZOOMED;
+                    zoomOutPicture();
+                    slideOutUpperBodyLayout();
+                    break;
+                case STATE_LOWER_BODY:
+                    mCurrentPictureState = STATE_NOT_ZOOMED;
+                    zoomOutPicture();
+                    slideOutLowerBodyLayout();
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            Log.d(TAG, "CurrentState: " + mCurrentPictureState);
+
+            if (mCurrentPictureState == STATE_NOT_ZOOMED) {
+                // Fling has no effect in not zoomed mode
+                return true;
+            }
+
+            final float THRESHOLD_VALUE = SLIDE_THRESHOLD_MULTIPLIER * mIvLook.getMeasuredHeight();
+            boolean thresholdCrossed = Math.abs(e2.getY() - e1.getY()) > THRESHOLD_VALUE;
+            if (thresholdCrossed) {
+                Log.d(TAG, "Threshold crossed");
+                if (e2.getY() > e1.getY() && mCurrentPictureState == STATE_LOWER_BODY) {
+                    Log.d(TAG, "Slide down");
+                    mCurrentPictureState = STATE_UPPER_BODY;
+                    slideUpPicture();
+                } else if (e2.getY() < e1.getY() && mCurrentPictureState == STATE_UPPER_BODY) {
+                    Log.d(TAG, "Slide up");
+                    mCurrentPictureState = STATE_LOWER_BODY;
+                    slideDownPicture();
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            // We override and set the return to true for this method because every gesture starts with a Down event so
+            // we want to listen to this event
+            return true;
+        }
+
     }
 
     // endregion
