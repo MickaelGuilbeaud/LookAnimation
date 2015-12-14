@@ -45,7 +45,7 @@ public class LookAnimationDelegate {
     /**
      * Animations duration in ms.
      */
-    private static final int ANIMATION_DURATION = 300;
+    private static final int ANIMATION_DURATION = 400;
     /**
      * Picture scale to apply when we zoom in.
      */
@@ -74,6 +74,8 @@ public class LookAnimationDelegate {
 
     private LookGestureListener mGestureListener = new LookGestureListener();
 
+    private boolean isInit = false;
+
     // endregion
 
 
@@ -83,6 +85,30 @@ public class LookAnimationDelegate {
         this.mIvLook = ivLook;
         this.mLlUpperBodyProducts = llUpperBodyProducts;
         this.mLlLowerBodyProducts = llLowerBodyProducts;
+    }
+
+    // endregion
+
+
+    // region UI
+
+    public void init() {
+        if (isInit) {
+            return;
+        }
+        isInit = true;
+
+        mLlUpperBodyProducts.animate()
+                .setDuration(0)
+                .setInterpolator(new FastOutSlowInInterpolator())
+                .alpha(1)
+                .translationYBy(mLlUpperBodyProducts.getMeasuredHeight());
+
+        mLlLowerBodyProducts.animate()
+                .setDuration(0)
+                .setInterpolator(new FastOutSlowInInterpolator())
+                .alpha(1)
+                .translationYBy(mLlLowerBodyProducts.getMeasuredHeight());
     }
 
     // endregion
@@ -100,6 +126,7 @@ public class LookAnimationDelegate {
     // region Animations
 
     public void zoomInPicture() {
+        Log.d(TAG, "zoomInPicture");
         final float translationXBy = mIvLook.getMeasuredWidth() * pictureZoomTranslationXMultiplier;
         final float translationYBy = mIvLook.getMeasuredHeight() * pictureZoomTranslationYMultiplierUpperBody;
 
@@ -113,25 +140,18 @@ public class LookAnimationDelegate {
     }
 
     public void zoomOutPicture() {
-        final float translationXBy = -1 * mIvLook.getMeasuredWidth() * pictureZoomTranslationXMultiplier;
-
-        // We need to apply a different transformation based on the current picture state
-        float yMultiplier = pictureZoomTranslationYMultiplierUpperBody;
-        if (mCurrentPictureState == STATE_LOWER_BODY) {
-            yMultiplier = pictureZoomTranslationYMultiplierLowerBody;
-        }
-        final float translationYBy = -1 * mIvLook.getMeasuredHeight() * yMultiplier;
-
+        Log.d(TAG, "zoomOutPicture");
         mIvLook.animate()
                 .setDuration(ANIMATION_DURATION)
                 .setInterpolator(new FastOutSlowInInterpolator())
                 .scaleX(1f)
                 .scaleY(1f)
-                .translationXBy(translationXBy)
-                .translationYBy(translationYBy);
+                .translationX(0)
+                .translationY(0);
     }
 
     public void slideDownPicture() {
+        Log.d(TAG, "slideDownPicture");
         final float translationYBy = mIvLook.getMeasuredHeight() * pictureTranslationYMultiplier;
 
         mIvLook.animate()
@@ -141,6 +161,7 @@ public class LookAnimationDelegate {
     }
 
     public void slideUpPicture() {
+        Log.d(TAG, "slideUpPicture");
         final float translationYBy = -1 * mIvLook.getMeasuredHeight() * pictureTranslationYMultiplier;
 
         mIvLook.animate()
@@ -150,19 +171,48 @@ public class LookAnimationDelegate {
     }
 
     public void slideInUpperBodyLayout() {
-        // TODO
+        Log.d(TAG, "slideInUpperBodyPicture");
+        mLlUpperBodyProducts.animate()
+                .setDuration(ANIMATION_DURATION)
+                .setInterpolator(new FastOutSlowInInterpolator())
+                .alpha(1)
+                .translationY(0);
     }
 
-    public void slideInLowerBodyLayout() {
-        // TODO
+    public void slideUpUpperBodyLayout() {
+        Log.d(TAG, "slideUpUpperBodyPicture");
+        mLlUpperBodyProducts.animate()
+                .setDuration(ANIMATION_DURATION)
+                .setInterpolator(new FastOutSlowInInterpolator())
+                .alpha(0)
+                .translationYBy(-1 * mLlLowerBodyProducts.getMeasuredHeight());
     }
 
     public void slideOutUpperBodyLayout() {
-        // TODO
+        Log.d(TAG, "slideOutUpperBodyPicture");
+        mLlUpperBodyProducts.animate()
+                .setDuration(ANIMATION_DURATION)
+                .setInterpolator(new FastOutSlowInInterpolator())
+                .alpha(0)
+                .translationYBy(mLlUpperBodyProducts.getMeasuredHeight());
+    }
+
+    public void slideInLowerBodyLayout() {
+        Log.d(TAG, "slideInLowerBodyPicture");
+        mLlLowerBodyProducts.animate()
+                .setDuration(ANIMATION_DURATION)
+                .setInterpolator(new FastOutSlowInInterpolator())
+                .alpha(1)
+                .translationY(0);
     }
 
     public void slideOutLowerBodyLayout() {
-        // TODO
+        Log.d(TAG, "slideOutLowerBodyPicture");
+        mLlLowerBodyProducts.animate()
+                .setDuration(ANIMATION_DURATION)
+                .setInterpolator(new FastOutSlowInInterpolator())
+                .alpha(0)
+                .translationYBy(mLlLowerBodyProducts.getMeasuredHeight());
     }
 
     // endregion
@@ -195,8 +245,6 @@ public class LookAnimationDelegate {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            Log.d(TAG, "CurrentState: " + mCurrentPictureState);
-
             if (mCurrentPictureState == STATE_NOT_ZOOMED) {
                 // Fling has no effect in not zoomed mode
                 return true;
@@ -205,15 +253,18 @@ public class LookAnimationDelegate {
             final float THRESHOLD_VALUE = SLIDE_THRESHOLD_MULTIPLIER * mIvLook.getMeasuredHeight();
             boolean thresholdCrossed = Math.abs(e2.getY() - e1.getY()) > THRESHOLD_VALUE;
             if (thresholdCrossed) {
-                Log.d(TAG, "Threshold crossed");
                 if (e2.getY() > e1.getY() && mCurrentPictureState == STATE_LOWER_BODY) {
                     Log.d(TAG, "Slide down");
                     mCurrentPictureState = STATE_UPPER_BODY;
                     slideUpPicture();
+                    slideInUpperBodyLayout();
+                    slideOutLowerBodyLayout();
                 } else if (e2.getY() < e1.getY() && mCurrentPictureState == STATE_UPPER_BODY) {
                     Log.d(TAG, "Slide up");
                     mCurrentPictureState = STATE_LOWER_BODY;
                     slideDownPicture();
+                    slideUpUpperBodyLayout();
+                    slideInLowerBodyLayout();
                 }
             }
             return true;

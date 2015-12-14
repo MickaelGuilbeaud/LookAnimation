@@ -57,14 +57,13 @@ public class LookModel {
         int lookPictureResId = R.drawable.suit;
 
         List<ProductModel> upperBodyProductModelList = new ArrayList<>(3);
-        for (int i = 0; i < 3; i++) {
-            upperBodyProductModelList.add(new ProductModel());
-        }
+        upperBodyProductModelList.add(new ProductModel(R.color.red));
+        upperBodyProductModelList.add(new ProductModel(R.color.purple));
+        upperBodyProductModelList.add(new ProductModel(R.color.indigo));
 
         List<ProductModel> lowerBodyProductModelList = new ArrayList<>(2);
-        for (int i = 0; i < 2; i++) {
-            upperBodyProductModelList.add(new ProductModel());
-        }
+        lowerBodyProductModelList.add(new ProductModel(R.color.green));
+        lowerBodyProductModelList.add(new ProductModel(R.color.amber));
 
         return new LookModel(lookPictureResId, upperBodyProductModelList, lowerBodyProductModelList);
     }

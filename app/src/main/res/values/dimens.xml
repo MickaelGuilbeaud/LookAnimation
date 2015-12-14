@@ -4,8 +4,8 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <!-- region Listitem Product -->
-    <dimen name="listitem_product_picture_size">48dp</dimen>
-    <dimen name="listitem_product_picture_margin">8dp</dimen>
+    <dimen name="listitem_product_picture_size">100dp</dimen>
+    <dimen name="listitem_product_picture_margin_top">8dp</dimen>
     <!-- endregion -->
 
 </resources>

@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
-
-    <ImageView
-        android:id="@+id/listitem_product_iv_picture"
-        android:layout_width="@dimen/listitem_product_picture_size"
-        android:layout_height="@dimen/listitem_product_picture_size"
-        android:layout_margin="@dimen/listitem_product_picture_margin"
-        />
-
-</LinearLayout>
+<ImageView
+    android:id="@+id/listitem_product_iv_picture"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/listitem_product_picture_size"
+    android:layout_height="@dimen/listitem_product_picture_size"
+    android:layout_marginTop="@dimen/listitem_product_picture_margin_top"
+    android:contentDescription="@string/listitem_product_accessibility"
+    />

@@ -1,16 +1,16 @@
 package com.mickaelg.lookanimation.ui;
 
+import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -18,9 +18,6 @@ import com.bumptech.glide.Glide;
 import com.mickaelg.lookanimation.R;
 import com.mickaelg.lookanimation.model.LookModel;
 import com.mickaelg.lookanimation.model.ProductModel;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -85,8 +82,6 @@ public class LookFragment extends Fragment {
     // region UI
 
     private void initUI() {
-        mLookAnimationDelegate = new LookAnimationDelegate(mIvLook, mLlUpperBodyProducts, mLlLowerBodyProducts);
-
         // Set the main picture
         Glide.with(this)
                 .load(mLook.getLookPictureResId())
@@ -96,19 +91,29 @@ public class LookFragment extends Fragment {
         // Create a view for each product composing the look, first for the upper body then for the lower body
         for (ProductModel product : mLook.getUpperBodyProductList()) {
             View productView = LayoutInflater.from(getActivity())
-                    .inflate(R.layout.listitem_product, mLlUpperBodyProducts);
-            productView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                    .inflate(R.layout.listitem_product, mLlUpperBodyProducts, false);
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                productView.setBackgroundColor(
+                        getResources().getColor(product.getProductColorResId(), getActivity().getTheme()));
+            } else {
+                productView.setBackgroundColor(getResources().getColor(product.getProductColorResId()));
+            }
+            mLlUpperBodyProducts.addView(productView);
         }
 
         for (ProductModel product : mLook.getLowerBodyProductList()) {
             View productView = LayoutInflater.from(getActivity())
-                    .inflate(R.layout.listitem_product, mLlLowerBodyProducts);
-            productView.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+                    .inflate(R.layout.listitem_product, mLlLowerBodyProducts, false);
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                productView.setBackgroundColor(
+                        getResources().getColor(product.getProductColorResId(), getActivity().getTheme()));
+            } else {
+                productView.setBackgroundColor(getResources().getColor(product.getProductColorResId()));
+            }
+            mLlLowerBodyProducts.addView(productView);
         }
 
-        // Hide the product layouts
-        mLlUpperBodyProducts.setVisibility(View.INVISIBLE);
-        mLlLowerBodyProducts.setVisibility(View.INVISIBLE);
+        mLookAnimationDelegate = new LookAnimationDelegate(mIvLook, mLlUpperBodyProducts, mLlLowerBodyProducts);
 
         // Init the gesture detector
         mDetector = new GestureDetectorCompat(getActivity(), mLookAnimationDelegate.getGestureListener());
@@ -118,6 +123,15 @@ public class LookFragment extends Fragment {
                 // Send the events to our detector that will manage them
                 mDetector.onTouchEvent(motionEvent);
                 return true;
+            }
+        });
+
+        ViewTreeObserver vto = mIvLook.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                Log.d(TAG, "onGlobalLayout");
+                mLookAnimationDelegate.init();
             }
         });
     }

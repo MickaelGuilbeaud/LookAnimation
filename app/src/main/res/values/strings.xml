@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">LookAnimation</string>
+    <string name="listitem_product_accessibility">Product picture</string>
 </resources>
