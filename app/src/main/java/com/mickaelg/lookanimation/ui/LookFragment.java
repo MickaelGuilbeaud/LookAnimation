@@ -23,6 +23,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
+ * Fragment displaying a {@link LookModel}. Init the {@link LookAnimationDelegate} class that actually manage the
+ * animations.
+ * <p/>
  * Created by mickaelg on 02/12/2015.
  */
 public class LookFragment extends Fragment {
@@ -126,11 +129,12 @@ public class LookFragment extends Fragment {
             }
         });
 
+        // Listener used to get a callback when the view finished loading. Animations can't start before this point.
         ViewTreeObserver vto = mIvLook.getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                Log.d(TAG, "onGlobalLayout");
+                Log.d(TAG, "onGlobalLayout called");
                 mLookAnimationDelegate.init();
             }
         });

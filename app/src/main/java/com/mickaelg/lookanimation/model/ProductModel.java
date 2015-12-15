@@ -10,10 +10,6 @@ public class ProductModel {
     @ColorRes
     private int productPictureResId;
 
-    public ProductModel() {
-        // Nothing
-    }
-
     public ProductModel(int productPictureResId) {
         this.productPictureResId = productPictureResId;
     }

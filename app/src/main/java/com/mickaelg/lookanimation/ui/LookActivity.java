@@ -5,6 +5,9 @@ import android.os.Bundle;
 
 import com.mickaelg.lookanimation.R;
 
+/**
+ * Simple activity holding a LookFragment.
+ */
 public class LookActivity extends AppCompatActivity {
 
     @Override

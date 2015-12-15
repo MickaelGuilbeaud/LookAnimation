@@ -12,6 +12,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
+ * This class manage the state of the view and execute animations based on it and on user interactions.
+ * <p/>
  * Created by mickaelg on 06/12/2015.
  */
 public class LookAnimationDelegate {
@@ -32,8 +34,17 @@ public class LookAnimationDelegate {
     private static final int STATE_UPPER_BODY = 1;
     private static final int STATE_LOWER_BODY = 2;
 
+    /**
+     * Image of the look.
+     */
     private ImageView mIvLook;
+    /**
+     * Layout containing upper body products.
+     */
     private LinearLayout mLlUpperBodyProducts;
+    /**
+     * Layout containing lower body products.
+     */
     private LinearLayout mLlLowerBodyProducts;
 
     /**
@@ -59,11 +70,6 @@ public class LookAnimationDelegate {
      */
     private static float pictureZoomTranslationYMultiplierUpperBody = 0.2f;
     /**
-     * Multiplier to apply for the translation on the Y axis during the zoomOut, if the current picture is in the lower
-     * body state. It is the sum of pictureZoomTranslationYMultiplierUpperBody and pictureTranslationYMultiplier.
-     */
-    private static float pictureZoomTranslationYMultiplierLowerBody = -0.2f;
-    /**
      * Multiplier to apply for the translation on the Y axis when changing the body part.
      */
     private static float pictureTranslationYMultiplier = -0.4f;
@@ -72,8 +78,13 @@ public class LookAnimationDelegate {
      */
     private static final float SLIDE_THRESHOLD_MULTIPLIER = 0.05f;
 
+    /**
+     * Gesture listener giving us callbacks when selected gestures are executed.
+     */
     private LookGestureListener mGestureListener = new LookGestureListener();
-
+    /**
+     * We want to init the delegate only once.
+     */
     private boolean isInit = false;
 
     // endregion
@@ -92,6 +103,9 @@ public class LookAnimationDelegate {
 
     // region UI
 
+    /**
+     * Apply the first animations to prepare the views.
+     */
     public void init() {
         if (isInit) {
             return;
@@ -125,6 +139,9 @@ public class LookAnimationDelegate {
 
     // region Animations
 
+    /**
+     * Zoom in the look picture.
+     */
     public void zoomInPicture() {
         Log.d(TAG, "zoomInPicture");
         final float translationXBy = mIvLook.getMeasuredWidth() * pictureZoomTranslationXMultiplier;
@@ -139,17 +156,23 @@ public class LookAnimationDelegate {
                 .translationYBy(translationYBy);
     }
 
+    /**
+     * Zoom out the look picture, restoring it to its default state.
+     */
     public void zoomOutPicture() {
         Log.d(TAG, "zoomOutPicture");
         mIvLook.animate()
                 .setDuration(ANIMATION_DURATION)
                 .setInterpolator(new FastOutSlowInInterpolator())
-                .scaleX(1f)
-                .scaleY(1f)
+                .scaleX(1)
+                .scaleY(1)
                 .translationX(0)
                 .translationY(0);
     }
 
+    /**
+     * Slide down the picture, so the view focus more on the lower body part.
+     */
     public void slideDownPicture() {
         Log.d(TAG, "slideDownPicture");
         final float translationYBy = mIvLook.getMeasuredHeight() * pictureTranslationYMultiplier;
@@ -160,6 +183,9 @@ public class LookAnimationDelegate {
                 .translationYBy(translationYBy);
     }
 
+    /**
+     * Slide up the picture, so the view focus more on the upper body part.
+     */
     public void slideUpPicture() {
         Log.d(TAG, "slideUpPicture");
         final float translationYBy = -1 * mIvLook.getMeasuredHeight() * pictureTranslationYMultiplier;
@@ -170,6 +196,9 @@ public class LookAnimationDelegate {
                 .translationYBy(translationYBy);
     }
 
+    /**
+     * Make the upper body layout enters the view, from the outside to the view to the bottom.
+     */
     public void slideInUpperBodyLayout() {
         Log.d(TAG, "slideInUpperBodyPicture");
         mLlUpperBodyProducts.animate()
@@ -179,6 +208,9 @@ public class LookAnimationDelegate {
                 .translationY(0);
     }
 
+    /**
+     * Make the upper body layout quits the view, from the bottom of the view to the top.
+     */
     public void slideUpUpperBodyLayout() {
         Log.d(TAG, "slideUpUpperBodyPicture");
         mLlUpperBodyProducts.animate()
@@ -188,6 +220,11 @@ public class LookAnimationDelegate {
                 .translationYBy(-1 * mLlLowerBodyProducts.getMeasuredHeight());
     }
 
+    /**
+     * Make the upper body layout quits the view, from the bottom to the outside of the view.
+     * We need to replace the layout at its default place in case the picture is zoomed out while focusing the lower
+     * body.
+     */
     public void slideOutUpperBodyLayout() {
         Log.d(TAG, "slideOutUpperBodyPicture");
 
@@ -206,6 +243,9 @@ public class LookAnimationDelegate {
                 .translationYBy(mLlUpperBodyProducts.getMeasuredHeight());
     }
 
+    /**
+     * Make the lower body layout enters the view, from the outside to the view to the bottom.
+     */
     public void slideInLowerBodyLayout() {
         Log.d(TAG, "slideInLowerBodyPicture");
         mLlLowerBodyProducts.animate()
@@ -215,6 +255,9 @@ public class LookAnimationDelegate {
                 .translationY(0);
     }
 
+    /**
+     * Make the lower body layout quits the view, from the bottom to the outside of the view.
+     */
     public void slideOutLowerBodyLayout() {
         Log.d(TAG, "slideOutLowerBodyPicture");
         mLlLowerBodyProducts.animate()
