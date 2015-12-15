@@ -190,6 +190,15 @@ public class LookAnimationDelegate {
 
     public void slideOutUpperBodyLayout() {
         Log.d(TAG, "slideOutUpperBodyPicture");
+
+        // In case the layout was above its default place, replace it before sliding it out
+        mLlUpperBodyProducts.animate()
+                .setDuration(0)
+                .setInterpolator(new FastOutSlowInInterpolator())
+                .alpha(0)
+                .translationY(0)
+                .start();
+
         mLlUpperBodyProducts.animate()
                 .setDuration(ANIMATION_DURATION)
                 .setInterpolator(new FastOutSlowInInterpolator())
@@ -238,6 +247,7 @@ public class LookAnimationDelegate {
                 case STATE_LOWER_BODY:
                     mCurrentPictureState = STATE_NOT_ZOOMED;
                     zoomOutPicture();
+                    slideOutUpperBodyLayout();
                     slideOutLowerBodyLayout();
             }
             return true;
