@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImageView
+    android:id="@+id/listitem_product_iv_picture"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/listitem_product_picture_size"
+    android:layout_height="@dimen/listitem_product_picture_size"
+    android:layout_marginTop="@dimen/listitem_product_picture_margin_top"
+    android:contentDescription="@string/listitem_product_accessibility"
+    />
